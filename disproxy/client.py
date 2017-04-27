@@ -23,7 +23,7 @@ class DisproxyClient(object):
             node = ProxyNode(proxy, self)
             self.proxy_nodes[node.id] = node
 
-    def getProxy(self, url):
+    def getProxy(self, url, type='ALIYUN'):
         proxyIds = self.proxy_nodes.keys()
         if len(proxyIds) == 0:
             self.logger.error("Local proxy pool is empty.")
@@ -36,6 +36,8 @@ class DisproxyClient(object):
             node = self.proxy_nodes[proxyIds[self.current]]
             self.current += 1
             if host in node.bans:
+                continue
+            elif node.type != type:
                 continue
             else:
                 return node
@@ -66,6 +68,7 @@ class ProxyNode(object):
         self.client = client
         self.url = "%s://%s:%d"%(doc['protocol'], doc['internal_ip'] if self.client.internal else doc['external_ip'], doc['port'])
         self.bans = doc['bans']
+        self.type = doc['type']
 
     def ban(self, url):
         parsedUrl = urlparse.urlparse(url)
